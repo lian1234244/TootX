@@ -16,15 +16,16 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -55,30 +56,29 @@ fun RootXApp() {
     }
 }
 // ==========================================
-// 1. Matrix 代码雨开屏 + RGB故障风
+// 1. Matrix 粒子雨开屏 + RGB故障风
 // ==========================================
-data class RainDrop(val x: Float, var y: Float, val speed: Float, val chars: List<Char>)
+data class RainDrop(val x: Float, var y: Float, val speed: Float, val length: Int)
 @Composable
 fun MatrixSplashScreen(onAnimationEnd: () -> Unit) {
     var showLogo by remember { mutableStateOf(false) }
     val glitchX = remember { Animatable(0f) }
     val fadeAlpha = remember { Animatable(1f) }
-    // 初始化数字雨粒子
+    // 初始化粒子
     val rainDrops = remember {
         mutableStateListOf<RainDrop>().apply {
-            val charPool = ('A'..'Z') + ('0'..'9') + ('@'..'Z') + "!@#$%^&*".toList()
             repeat(40) {
                 add(RainDrop(
                     x = Random.nextFloat() * 1080f,
                     y = Random.nextFloat() * -2000f,
                     speed = Random.nextFloat() * 15f + 5f,
-                    chars = List(15) { charPool.random() }
+                    length = Random.nextInt(10, 30)
                 ))
             }
         }
     }
     LaunchedEffect(Unit) {
-        delay(3000) // 让代码雨下一会
+        delay(3000)
         showLogo = true
         // RGB抖动
         repeat(5) {
@@ -97,38 +97,33 @@ fun MatrixSplashScreen(onAnimationEnd: () -> Unit) {
             .graphicsLayer { alpha = fadeAlpha.value },
         contentAlignment = Alignment.Center
     ) {
-        // 绘制代码雨
+        // 绘制代码雨（用线条+亮点代替drawText，绝不报错）
         Canvas(modifier = Modifier.fillMaxSize()) {
             rainDrops.forEach { drop ->
                 drop.y += drop.speed
-                if (drop.y > size.height) drop.y = Random.nextFloat() * -500f
-                drop.chars.forEachIndexed { index, char ->
-                    val charY = drop.y - (index * 20f)
-                    if (charY in 0f..size.height) {
-                        drawText(
-                            text = char.toString(),
-                            color = if (index == 0) Color(0xFF00FF41) else Color(0xFF00FF41).copy(alpha = 1f - (index * 0.07f)),
-                            topLeft = Offset(drop.x, charY)
-                        )
-                    }
-                }
-            }
-        }
-        // CRT 扫描线特效
-        Canvas(modifier = Modifier.fillMaxSize()) {
-            repeat((size.height / 4).toInt()) { i ->
-                drawLine(Color.Black.copy(alpha = 0.2f), Offset(0f, i * 4f), Offset(size.width, i * 4f))
+                if (drop.y - drop.length > size.height) drop.y = Random.nextFloat() * -500f
+                drawLine(
+                    color = Color(0xFF00FF41).copy(alpha = 0.6f),
+                    start = Offset(drop.x, drop.y - drop.length),
+                    end = Offset(drop.x, drop.y),
+                    strokeWidth = 2f
+                )
+                drawCircle(
+                    color = Color.White,
+                    radius = 2f,
+                    center = Offset(drop.x, drop.y)
+                )
             }
         }
         // RGB 故障 LOGO
         if (showLogo) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text("ROOT X", style = TextStyle(Color.Red, FontFamily.Monospace, FontWeight.Black, 80.sp), modifier = Modifier.graphicsLayer { translationX = glitchX.value * 3f })
-                Text("ROOT X", style = TextStyle(Color.Cyan, FontFamily.Monospace, FontWeight.Black, 80.sp), modifier = Modifier.graphicsLayer { translationX = -glitchX.value * 2f })
-                Text("ROOT X", style = TextStyle(Color(0xFF00FF41), FontFamily.Monospace, FontWeight.Black, 80.sp, shadow = Shadow(Color(0xFF00FF41), blurRadius = 30f)), modifier = Modifier.graphicsLayer { translationX = glitchX.value })
+                Text("ROOT X", style = TextStyle(color = Color.Red, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black, fontSize = 80.sp), modifier = Modifier.graphicsLayer { translationX = glitchX.value * 3f })
+                Text("ROOT X", style = TextStyle(color = Color.Cyan, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black, fontSize = 80.sp), modifier = Modifier.graphicsLayer { translationX = -glitchX.value * 2f })
+                Text("ROOT X", style = TextStyle(color = Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Black, fontSize = 80.sp, shadow = Shadow(color = Color(0xFF00FF41), blurRadius = 30f)), modifier = Modifier.graphicsLayer { translationX = glitchX.value })
                 Spacer(modifier = Modifier.height(16.dp))
                 val scanAlpha by rememberInfiniteTransition(label = "scan").animateFloat(initialValue = 0.2f, targetValue = 1f, animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "scan")
-                Text("SYSTEM BREACH SUCCESSFUL", style = TextStyle(Color.White.copy(alpha = scanAlpha), FontFamily.Monospace, 14.sp))
+                Text("SYSTEM BREACH SUCCESSFUL", style = TextStyle(color = Color.White.copy(alpha = scanAlpha), fontFamily = FontFamily.Monospace, fontSize = 14.sp))
             }
         }
     }
@@ -157,24 +152,19 @@ fun HologramLoginScreen(onLoginSuccess: () -> Unit) {
         modifier = Modifier.fillMaxSize().background(Color(0xFF050505)),
         contentAlignment = Alignment.Center
     ) {
-        // 伪3D透视效果容器
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(32.dp),
             modifier = Modifier
                 .graphicsLayer {
-                    // 应用3D透视倾斜
                     rotationX = -5f
                     cameraDistance = 12f * density
                 }
                 .padding(24.dp)
         ) {
-            Text("AUTHENTICATION", style = TextStyle(Color(0xFF00FF41), FontFamily.Monospace, FontWeight.Bold, 28.sp, shadow = Shadow(Color(0xFF00FF41), blurRadius = 15f)))
-            // 用户名输入
+            Text("AUTHENTICATION", style = TextStyle(color = Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 28.sp, shadow = Shadow(color = Color(0xFF00FF41), blurRadius = 15f)))
             CyberTextField(value = username, onValueChange = { username = it }, label = "USER_ID")
-            // 密码输入
             CyberTextField(value = password, onValueChange = { password = it }, label = "ACCESS_KEY", isPassword = true)
-            // 登录按钮
             Box(
                 modifier = Modifier
                     .clickable {
@@ -186,15 +176,14 @@ fun HologramLoginScreen(onLoginSuccess: () -> Unit) {
                         }
                     }
                     .drawBehind {
-                        drawRect(color = Color(0xFF00FF41), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+                        drawRect(color = Color(0xFF00FF41), style = Stroke(width = 2f))
                     }
                     .padding(horizontal = 48.dp, vertical = 12.dp),
                 contentAlignment = Alignment.Center
             ) {
-                Text(if (isProcessing) "PROCESSING..." else "LOGIN", color = Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
+                Text(if (isProcessing) "PROCESSING..." else "LOGIN", style = TextStyle(color = Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold))
             }
-            Text(statusText, color = if (statusText.contains("ERROR")) Color.Red else Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontSize = 12.sp)
-            // 模拟验证逻辑
+            Text(statusText, style = TextStyle(color = if (statusText.contains("ERROR")) Color.Red else Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontSize = 12.sp))
             LaunchedEffect(isProcessing) {
                 if (isProcessing) {
                     delay(1500)
@@ -206,25 +195,23 @@ fun HologramLoginScreen(onLoginSuccess: () -> Unit) {
         }
     }
 }
-// 极客风全息输入框
 @Composable
 fun CyberTextField(value: String, onValueChange: (String) -> Unit, label: String, isPassword: Boolean = false) {
     Column {
-        Text(label, color = Color.Gray, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+        Text(label, style = TextStyle(color = Color.Gray, fontFamily = FontFamily.Monospace, fontSize = 12.sp))
         Box(Modifier.padding(top = 8.dp).drawBehind {
-            // 底部发光线
             drawLine(Color(0xFF00FF41), Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 2f)
         }) {
             BasicTextField(
                 value = value,
                 onValueChange = onValueChange,
-                textStyle = TextStyle(Color(0xFF00FF41), FontFamily.Monospace, 18.sp),
+                textStyle = TextStyle(color = Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontSize = 18.sp),
                 singleLine = true,
                 visualTransformation = if (isPassword) PasswordVisualTransformation(mask = '•') else VisualTransformation.None,
                 modifier = Modifier.fillMaxWidth(0.8f).padding(bottom = 4.dp)
             )
             if (value.isEmpty()) {
-                Text("...", color = Color.DarkGray, fontFamily = FontFamily.Monospace, fontSize = 18.sp)
+                Text("...", style = TextStyle(color = Color.DarkGray, fontFamily = FontFamily.Monospace, fontSize = 18.sp))
             }
         }
     }
@@ -236,11 +223,9 @@ fun CyberTextField(value: String, onValueChange: (String) -> Unit, label: String
 fun DashboardScreen() {
     var rootStatus by remember { mutableStateOf("Detecting Root...") }
     var systemInfo by remember { mutableStateOf("") }
-    // 极度安全的Root检测逻辑
     LaunchedEffect(Unit) {
         withContext(Dispatchers.IO) {
             try {
-                // 使用同步执行命令的方式检测，比直接获取Shell更安全
                 val result = Shell.cmd("id").exec()
                 if (result.isSuccess) {
                     val output = result.out.joinToString("\n")
@@ -256,24 +241,20 @@ fun DashboardScreen() {
                     systemInfo = result.err.joinToString("\n")
                 }
             } catch (e: Exception) {
-                // 捕获任何异常，确保App存活
                 rootStatus = "ROOT ACCESS: ERROR ✗"
                 systemInfo = e.localizedMessage ?: "Unknown error"
             }
         }
     }
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Black)
-            .padding(24.dp),
+        modifier = Modifier.fillMaxSize().background(Color.Black).padding(24.dp),
         contentAlignment = Alignment.TopStart
     ) {
         Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text("SYSTEM DASHBOARD", style = TextStyle(Color.White, FontFamily.Monospace, FontWeight.Bold, 22.sp))
+            Text("SYSTEM DASHBOARD", style = TextStyle(color = Color.White, fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold, fontSize = 22.sp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(rootStatus, color = if (rootStatus.contains("GRANTED")) Color(0xFF00FF41) else Color.Red, fontFamily = FontFamily.Monospace, fontSize = 18.sp, shadow = Shadow(color = if (rootStatus.contains("GRANTED")) Color.Green else Color.Red, blurRadius = 10f))
-            Text(systemInfo, color = Color.Gray, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+            Text(rootStatus, style = TextStyle(color = if (rootStatus.contains("GRANTED")) Color(0xFF00FF41) else Color.Red, fontFamily = FontFamily.Monospace, fontSize = 18.sp, shadow = Shadow(color = if (rootStatus.contains("GRANTED")) Color.Green else Color.Red, blurRadius = 10f)))
+            Text(systemInfo, style = TextStyle(color = Color.Gray, fontFamily = FontFamily.Monospace, fontSize = 12.sp))
         }
     }
 }
