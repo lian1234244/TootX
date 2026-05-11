@@ -1,241 +1,279 @@
 package com.root.toolbox
-
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
-
+import kotlinx.coroutines.withContext
+import kotlin.random.Random
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             MainActivityTheme {
-                var showMainScreen by remember { mutableStateOf(false) }
-                if (showMainScreen) {
-                    MainPlaceholderScreen()
-                } else {
-                    SplashScreen(onAnimationEnd = {
-                        showMainScreen = true
-                    })
-                }
+                RootXApp()
             }
         }
     }
 }
-
 @Composable
-fun SplashScreen(onAnimationEnd: () -> Unit) {
-    var terminalText by remember { mutableStateOf("") }
+fun RootXApp() {
+    var screenState by remember { mutableStateOf("splash") }
+    when (screenState) {
+        "splash" -> MatrixSplashScreen(onAnimationEnd = { screenState = "login" })
+        "login" -> HologramLoginScreen(onLoginSuccess = { screenState = "dashboard" })
+        "dashboard" -> DashboardScreen()
+    }
+}
+// ==========================================
+// 1. Matrix 代码雨开屏 + RGB故障风
+// ==========================================
+data class RainDrop(val x: Float, var y: Float, val speed: Float, val chars: List<Char>)
+@Composable
+fun MatrixSplashScreen(onAnimationEnd: () -> Unit) {
     var showLogo by remember { mutableStateOf(false) }
-    // Glitch 抖动偏移量
     val glitchX = remember { Animatable(0f) }
-    val glitchY = remember { Animatable(0f) }
     val fadeAlpha = remember { Animatable(1f) }
-    // 终端打印的剧本
-    val script = listOf(
-        "root@localhost:~$ ",
-        "su",
-        "Requesting root access...",
-        "Checking SuperUser binary...",
-        "Granting permissions...",
-        "ROOT GRANTED ✓"
-    )
-    LaunchedEffect(Unit) {
-        // 阶段一：模拟终端打字
-        for (line in script) {
-            if (line == "su") {
-                terminalText += line + "\n"
-                delay(400)
-            } else {
-                for (char in line) {
-                    terminalText += char
-                    delay(30) // 打字速度
-                }
-                terminalText += "\n"
-                delay(300)
+    // 初始化数字雨粒子
+    val rainDrops = remember {
+        mutableStateListOf<RainDrop>().apply {
+            val charPool = ('A'..'Z') + ('0'..'9') + ('@'..'Z') + "!@#$%^&*".toList()
+            repeat(40) {
+                add(RainDrop(
+                    x = Random.nextFloat() * 1080f,
+                    y = Random.nextFloat() * -2000f,
+                    speed = Random.nextFloat() * 15f + 5f,
+                    chars = List(15) { charPool.random() }
+                ))
             }
         }
-        delay(500)
-        // 阶段二：触发 Glitch 抖动效果
+    }
+    LaunchedEffect(Unit) {
+        delay(3000) // 让代码雨下一会
         showLogo = true
-        repeat(6) {
-            glitchX.animateTo(targetValue = (Math.random() * 12 - 6).toFloat(), animationSpec = tween(25))
-            glitchY.animateTo(targetValue = (Math.random() * 8 - 4).toFloat(), animationSpec = tween(25))
-            delay(40)
+        // RGB抖动
+        repeat(5) {
+            glitchX.animateTo((Math.random() * 10 - 5).toFloat(), tween(25))
+            delay(30)
         }
-        // 抖动停止，归位
-        glitchX.animateTo(0f, animationSpec = tween(100))
-        glitchY.animateTo(0f, animationSpec = tween(100))
-        delay(1200)
-        // 阶段三：淡出
-        fadeAlpha.animateTo(0f, animationSpec = tween(800, easing = FastOutSlowInEasing))
-        // 动画结束回调
+        glitchX.animateTo(0f, tween(50))
+        delay(2000)
+        fadeAlpha.animateTo(0f, tween(800))
         onAnimationEnd()
     }
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.Black)
-            .graphicsLayer { alpha = fadeAlpha.value }, // 整体淡出
+            .graphicsLayer { alpha = fadeAlpha.value },
         contentAlignment = Alignment.Center
     ) {
-        if (!showLogo) {
-            // 终端文本
-            BasicText(
-                text = terminalText,
-                modifier = Modifier.padding(16.dp),
-                style = TextStyle(
-                    color = Color(0xFF00FF41), // 经典终端绿
-                    fontFamily = FontFamily.Monospace,
-                    fontSize = 14.sp
-                )
-            )
-        } else {
-            // Glitch Logo
+        // 绘制代码雨
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            rainDrops.forEach { drop ->
+                drop.y += drop.speed
+                if (drop.y > size.height) drop.y = Random.nextFloat() * -500f
+                drop.chars.forEachIndexed { index, char ->
+                    val charY = drop.y - (index * 20f)
+                    if (charY in 0f..size.height) {
+                        drawText(
+                            text = char.toString(),
+                            color = if (index == 0) Color(0xFF00FF41) else Color(0xFF00FF41).copy(alpha = 1f - (index * 0.07f)),
+                            topLeft = Offset(drop.x, charY)
+                        )
+                    }
+                }
+            }
+        }
+        // CRT 扫描线特效
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            repeat((size.height / 4).toInt()) { i ->
+                drawLine(Color.Black.copy(alpha = 0.2f), Offset(0f, i * 4f), Offset(size.width, i * 4f))
+            }
+        }
+        // RGB 故障 LOGO
+        if (showLogo) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                // 红色图层 (偏移底层)
-                BasicText(
-                    text = "ROOTX",
-                    style = TextStyle(color = Color.Red, fontWeight = FontWeight.Black, fontSize = 72.sp, fontFamily = FontFamily.Monospace),
-                    modifier = Modifier.graphicsLayer {
-                        translationX = glitchX.value * 2f
-                        translationY = glitchY.value
-                    }
-                )
-                // 蓝色图层 (偏移底层)
-                BasicText(
-                    text = "ROOTX",
-                    style = TextStyle(color = Color.Cyan, fontWeight = FontWeight.Black, fontSize = 72.sp, fontFamily = FontFamily.Monospace),
-                    modifier = Modifier.graphicsLayer {
-                        translationX = -glitchX.value
-                        translationY = -glitchY.value * 2f
-                    }
-                )
-                // 主绿色图层 (最上层)
-                BasicText(
-                    text = "ROOTX",
-                    style = TextStyle(color = Color(0xFF00FF41), fontWeight = FontWeight.Black, fontSize = 72.sp, fontFamily = FontFamily.Monospace),
-                    modifier = Modifier.graphicsLayer {
-                        translationX = glitchX.value
-                        translationY = glitchY.value
-                    }
-                )
+                Text("ROOT X", style = TextStyle(Color.Red, FontFamily.Monospace, FontWeight.Black, 80.sp), modifier = Modifier.graphicsLayer { translationX = glitchX.value * 3f })
+                Text("ROOT X", style = TextStyle(Color.Cyan, FontFamily.Monospace, FontWeight.Black, 80.sp), modifier = Modifier.graphicsLayer { translationX = -glitchX.value * 2f })
+                Text("ROOT X", style = TextStyle(Color(0xFF00FF41), FontFamily.Monospace, FontWeight.Black, 80.sp, shadow = Shadow(Color(0xFF00FF41), blurRadius = 30f)), modifier = Modifier.graphicsLayer { translationX = glitchX.value })
                 Spacer(modifier = Modifier.height(16.dp))
-                BasicText(
-                    text = "TOOLBOX v1.0",
-                    style = TextStyle(color = Color.White.copy(alpha = 0.8f), fontFamily = FontFamily.Monospace, fontSize = 16.sp)
-                )
+                val scanAlpha by rememberInfiniteTransition(label = "scan").animateFloat(initialValue = 0.2f, targetValue = 1f, animationSpec = infiniteRepeatable(tween(800), RepeatMode.Reverse), label = "scan")
+                Text("SYSTEM BREACH SUCCESSFUL", style = TextStyle(Color.White.copy(alpha = scanAlpha), FontFamily.Monospace, 14.sp))
             }
         }
     }
 }
-
+// ==========================================
+// 2. 伪3D全息投影登录界面
+// ==========================================
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun MainPlaceholderScreen() {
-    // 1. 定义需要请求的危险权限列表
+fun HologramLoginScreen(onLoginSuccess: () -> Unit) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var statusText by remember { mutableStateOf("> AWAITING CREDENTIALS...") }
+    var isProcessing by remember { mutableStateOf(false) }
+    // 请求普通权限
     val permissionsToRequest = remember {
         mutableListOf<String>().apply {
-            add(Manifest.permission.POST_NOTIFICATIONS)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                add(Manifest.permission.READ_MEDIA_IMAGES)
-            } else {
-                add(Manifest.permission.READ_EXTERNAL_STORAGE)
-                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.POST_NOTIFICATIONS)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) add(Manifest.permission.READ_MEDIA_IMAGES)
+            else { add(Manifest.permission.READ_EXTERNAL_STORAGE); add(Manifest.permission.WRITE_EXTERNAL_STORAGE) }
         }.toList()
     }
-    // 2. 初始化权限状态管理器
     val multiplePermissionsState = rememberMultiplePermissionsState(permissionsToRequest)
-    // 3. 进入界面立刻请求权限
-    LaunchedEffect(Unit) {
-        if (!multiplePermissionsState.allPermissionsGranted) {
-            multiplePermissionsState.launchMultiplePermissionRequest()
-        }
-    }
-    // 4. Root 状态检测
-    var rootStatus by remember { mutableStateOf("Detecting Root...") }
-    var isCheckingRoot by remember { mutableStateOf(true) }
-    LaunchedEffect(Unit) {
-        try {
-            val isRooted = RootManager.isRootAvailable()
-            rootStatus = if (isRooted) "Root Access Granted ✓" else "Root Not Available ✗"
-            // 如果有 Root，测试执行一个命令
-            if (isRooted) {
-                val output = RootManager.executeCommand("whoami")
-                rootStatus += "\n[whoami]: $output"
+    LaunchedEffect(Unit) { multiplePermissionsState.launchMultiplePermissionRequest() }
+    Box(
+        modifier = Modifier.fillMaxSize().background(Color(0xFF050505)),
+        contentAlignment = Alignment.Center
+    ) {
+        // 伪3D透视效果容器
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(32.dp),
+            modifier = Modifier
+                .graphicsLayer {
+                    // 应用3D透视倾斜
+                    rotationX = -5f
+                    cameraDistance = 12f * density
+                }
+                .padding(24.dp)
+        ) {
+            Text("AUTHENTICATION", style = TextStyle(Color(0xFF00FF41), FontFamily.Monospace, FontWeight.Bold, 28.sp, shadow = Shadow(Color(0xFF00FF41), blurRadius = 15f)))
+            // 用户名输入
+            CyberTextField(value = username, onValueChange = { username = it }, label = "USER_ID")
+            // 密码输入
+            CyberTextField(value = password, onValueChange = { password = it }, label = "ACCESS_KEY", isPassword = true)
+            // 登录按钮
+            Box(
+                modifier = Modifier
+                    .clickable {
+                        if (username.isNotEmpty() && password.isNotEmpty()) {
+                            isProcessing = true
+                            statusText = "> VERIFYING..."
+                        } else {
+                            statusText = "> ERROR: NULL INPUT"
+                        }
+                    }
+                    .drawBehind {
+                        drawRect(color = Color(0xFF00FF41), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+                    }
+                    .padding(horizontal = 48.dp, vertical = 12.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(if (isProcessing) "PROCESSING..." else "LOGIN", color = Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontWeight = FontWeight.Bold)
             }
-        } catch (e: Exception) {
-            rootStatus = "Root Check Error: ${e.message}"
-        } finally {
-            isCheckingRoot = false
+            Text(statusText, color = if (statusText.contains("ERROR")) Color.Red else Color(0xFF00FF41), fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+            // 模拟验证逻辑
+            LaunchedEffect(isProcessing) {
+                if (isProcessing) {
+                    delay(1500)
+                    statusText = "> ACCESS GRANTED"
+                    delay(800)
+                    onLoginSuccess()
+                }
+            }
         }
     }
-    // 5. UI 绘制
-    Column(
+}
+// 极客风全息输入框
+@Composable
+fun CyberTextField(value: String, onValueChange: (String) -> Unit, label: String, isPassword: Boolean = false) {
+    Column {
+        Text(label, color = Color.Gray, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
+        Box(Modifier.padding(top = 8.dp).drawBehind {
+            // 底部发光线
+            drawLine(Color(0xFF00FF41), Offset(0f, size.height), Offset(size.width, size.height), strokeWidth = 2f)
+        }) {
+            BasicTextField(
+                value = value,
+                onValueChange = onValueChange,
+                textStyle = TextStyle(Color(0xFF00FF41), FontFamily.Monospace, 18.sp),
+                singleLine = true,
+                visualTransformation = if (isPassword) PasswordVisualTransformation(mask = '•') else VisualTransformation.None,
+                modifier = Modifier.fillMaxWidth(0.8f).padding(bottom = 4.dp)
+            )
+            if (value.isEmpty()) {
+                Text("...", color = Color.DarkGray, fontFamily = FontFamily.Monospace, fontSize = 18.sp)
+            }
+        }
+    }
+}
+// ==========================================
+// 3. 安全的主控台与 Root 获取 (绝不闪退)
+// ==========================================
+@Composable
+fun DashboardScreen() {
+    var rootStatus by remember { mutableStateOf("Detecting Root...") }
+    var systemInfo by remember { mutableStateOf("") }
+    // 极度安全的Root检测逻辑
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.IO) {
+            try {
+                // 使用同步执行命令的方式检测，比直接获取Shell更安全
+                val result = Shell.cmd("id").exec()
+                if (result.isSuccess) {
+                    val output = result.out.joinToString("\n")
+                    if (output.contains("uid=0")) {
+                        rootStatus = "ROOT ACCESS: GRANTED ✓"
+                        systemInfo = output
+                    } else {
+                        rootStatus = "ROOT ACCESS: DENIED ✗ (Not uid=0)"
+                        systemInfo = "Current user: $output"
+                    }
+                } else {
+                    rootStatus = "ROOT ACCESS: DENIED ✗"
+                    systemInfo = result.err.joinToString("\n")
+                }
+            } catch (e: Exception) {
+                // 捕获任何异常，确保App存活
+                rootStatus = "ROOT ACCESS: ERROR ✗"
+                systemInfo = e.localizedMessage ?: "Unknown error"
+            }
+        }
+    }
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+            .background(Color.Black)
+            .padding(24.dp),
+        contentAlignment = Alignment.TopStart
     ) {
-        // 权限状态
-        Text(
-            text = if (multiplePermissionsState.allPermissionsGranted) "Permissions: GRANTED" else "Permissions: DENIED",
-            color = if (multiplePermissionsState.allPermissionsGranted) Color(0xFF00FF41) else Color.Yellow,
-            fontFamily = FontFamily.Monospace,
-            fontSize = 16.sp
-        )
-        Spacer(modifier = Modifier.height(24.dp))
-        // Root 检测状态
-        if (isCheckingRoot) {
-            CircularProgressIndicator(
-                modifier = Modifier.size(24.dp),
-                color = Color(0xFF00FF41)
-            )
-        } else {
-            Text(
-                text = rootStatus,
-                color = if (rootStatus.contains("Granted")) Color.Green else Color.Red,
-                fontFamily = FontFamily.Monospace,
-                fontSize = 16.sp
-            )
+        Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Text("SYSTEM DASHBOARD", style = TextStyle(Color.White, FontFamily.Monospace, FontWeight.Bold, 22.sp))
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(rootStatus, color = if (rootStatus.contains("GRANTED")) Color(0xFF00FF41) else Color.Red, fontFamily = FontFamily.Monospace, fontSize = 18.sp, shadow = Shadow(color = if (rootStatus.contains("GRANTED")) Color.Green else Color.Red, blurRadius = 10f))
+            Text(systemInfo, color = Color.Gray, fontFamily = FontFamily.Monospace, fontSize = 12.sp)
         }
     }
 }
