@@ -28,6 +28,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.sp
 import android.graphics.Paint
@@ -222,46 +223,48 @@ private fun DrawScope.drawLogo(
     val baseY = centerY + fontSize / 3 + glitchOffsetY
     val scanLineX = startX + textWidth * scanProgress
     
-    val nativeCanvas = drawContext.canvas.nativeCanvas
-    
-    if (glowIntensity > 0f || breathingAlpha > 0f) {
-        val glowAlpha = (glowIntensity * 0.5f + breathingAlpha * 0.3f) * fadeOutAlpha
+    drawIntoCanvas { composeCanvas ->
+        val androidCanvas: android.graphics.Canvas = composeCanvas.nativeCanvas
         
-        val glowPaint = Paint(textPaint).apply {
-            color = Color(0xFF00FF41).copy(alpha = glowAlpha).toArgb()
-            setShadowLayer(20f, 0f, 0f, Color(0xFF00FF41).copy(alpha = glowAlpha * 0.5f).toArgb())
+        if (glowIntensity > 0f || breathingAlpha > 0f) {
+            val glowAlpha = (glowIntensity * 0.5f + breathingAlpha * 0.3f) * fadeOutAlpha
+            
+            val glowPaint = Paint(textPaint).apply {
+                color = Color(0xFF00FF41).copy(alpha = glowAlpha).toArgb()
+                setShadowLayer(20f, 0f, 0f, Color(0xFF00FF41).copy(alpha = glowAlpha * 0.5f).toArgb())
+            }
+            androidCanvas.drawText(
+                logoText,
+                startX + glitchOffsetX,
+                baseY,
+                glowPaint
+            )
+            
+            for (i in 0 until 3) {
+                val blurOffset = (i + 1) * 4f
+                val blurAlpha = glowAlpha * (0.25f - i * 0.06f)
+                val blurPaint = Paint(textPaint).apply {
+                    color = Color(0xFF00FF41).copy(alpha = blurAlpha).toArgb()
+                }
+                androidCanvas.drawText(
+                    logoText,
+                    startX + glitchOffsetX + Random.nextFloat() * blurOffset - blurOffset / 2,
+                    baseY + Random.nextFloat() * blurOffset - blurOffset / 2,
+                    blurPaint
+                )
+            }
         }
-        nativeCanvas.drawText(
+        
+        val mainPaint = Paint(textPaint).apply {
+            color = Color.White.copy(alpha = fadeOutAlpha).toArgb()
+        }
+        androidCanvas.drawText(
             logoText,
             startX + glitchOffsetX,
             baseY,
-            glowPaint
+            mainPaint
         )
-        
-        for (i in 0 until 3) {
-            val blurOffset = (i + 1) * 4f
-            val blurAlpha = glowAlpha * (0.25f - i * 0.06f)
-            val blurPaint = Paint(textPaint).apply {
-                color = Color(0xFF00FF41).copy(alpha = blurAlpha).toArgb()
-            }
-            nativeCanvas.drawText(
-                logoText,
-                startX + glitchOffsetX + Random.nextFloat() * blurOffset - blurOffset / 2,
-                baseY + Random.nextFloat() * blurOffset - blurOffset / 2,
-                blurPaint
-            )
-        }
     }
-    
-    val mainPaint = Paint(textPaint).apply {
-        color = Color.White.copy(alpha = fadeOutAlpha).toArgb()
-    }
-    nativeCanvas.drawText(
-        logoText,
-        startX + glitchOffsetX,
-        baseY,
-        mainPaint
-    )
     
     if (scanProgress in 0.01f..0.99f) {
         drawRect(
