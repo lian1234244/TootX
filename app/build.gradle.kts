@@ -77,7 +77,11 @@ dependencies {
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.animation:animation-graphics")
 
+    // 1. Accompanist 权限请求库 (用于动态申请危险权限)
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+    // 2. Topjohnwu Libsu (Magisk 作者的 Root 操作库，最稳定)
     implementation("com.github.topjohnwu.libsu:core:6.0.0")
+    implementation("com.github.topjohnwu.libsu:service:6.0.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
