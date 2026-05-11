@@ -77,7 +77,7 @@ dependencies {
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.animation:animation-graphics")
 
-    implementation("com.topjohnwu.libsu:core:5.2.2") // 安全的Root库
+    implementation("com.github.topjohnwu:libsu:5.2.2") // 安全的Root库 (JitPack)
     implementation("com.google.accompanist:accompanist-permissions:0.34.0") // 权限请求库
 
     debugImplementation("androidx.compose.ui:ui-tooling")
