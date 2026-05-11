@@ -27,9 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
-// 注意：这里删除了 import androidx.compose.ui.graphics.Canvas，避免同名冲突！
+// 注意：这里依然不需要导入 androidx.compose.ui.graphics.Canvas，避免同名冲突！
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.sp
 import android.graphics.Paint
