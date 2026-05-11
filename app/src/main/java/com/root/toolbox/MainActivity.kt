@@ -82,7 +82,7 @@ fun RootXApp() {
 // 1. 现代科技感开屏动画
 // ==========================================
 data class GlowParticle(
-    val x: Float,
+    var x: Float,
     var y: Float,
     val speed: Float,
     val size: Float,
@@ -680,8 +680,12 @@ fun DashboardScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                FeatureButton("应用管理", "管理已安装应用")
-                FeatureButton("文件管理", "浏览系统文件")
+                Box(modifier = Modifier.weight(1f)) {
+                    FeatureButton("应用管理", "管理已安装应用")
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    FeatureButton("文件管理", "浏览系统文件")
+                }
             }
             
             Spacer(modifier = Modifier.height(12.dp))
@@ -690,8 +694,12 @@ fun DashboardScreen() {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                FeatureButton("系统优化", "清理加速")
-                FeatureButton("更多功能", "敬请期待")
+                Box(modifier = Modifier.weight(1f)) {
+                    FeatureButton("系统优化", "清理加速")
+                }
+                Box(modifier = Modifier.weight(1f)) {
+                    FeatureButton("更多功能", "敬请期待")
+                }
             }
         }
     }
@@ -701,7 +709,7 @@ fun DashboardScreen() {
 fun FeatureButton(title: String, subtitle: String) {
     Box(
         modifier = Modifier
-            .weight(1f)
+            .fillMaxWidth()
             .height(80.dp)
             .background(Color(0xFF1A1F2E))
             .drawBehind {
