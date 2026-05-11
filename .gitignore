@@ -82,4 +82,3 @@ lint/tmp/
 # Secrets
 secrets.properties
 local.properties
-gradle.properties
