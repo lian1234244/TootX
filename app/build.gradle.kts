@@ -77,7 +77,7 @@ dependencies {
     implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.animation:animation-graphics")
 
-    implementation("com.topjohnwu.libsu:core:5.2.2")
+    implementation("com.github.topjohnwu.libsu:core:6.0.0")
 
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
