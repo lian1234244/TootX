@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.sp
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberMultiplePermissionsState
 import com.topjohnwu.superuser.Shell
+import kotlinx.coroutines.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
@@ -97,6 +98,8 @@ fun ModernSplashScreen(onAnimationEnd: () -> Unit) {
     val fadeAlpha = remember { Animatable(1f) }
     val glowPulse = remember { Animatable(0.5f) }
     
+    val scope = rememberCoroutineScope()
+    
     // 发光粒子
     val particles = remember {
         mutableStateListOf<GlowParticle>().apply {
@@ -113,16 +116,16 @@ fun ModernSplashScreen(onAnimationEnd: () -> Unit) {
     }
     
     LaunchedEffect(Unit) {
-        // 阶段1：粒子动画 2秒
+        // 阶段 1：粒子动画 2 秒
         delay(2000)
         
-        // 阶段2：Logo出现
+        // 阶段 2：Logo 出现
         showLogo = true
         logoAlpha.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
         logoScale.animateTo(1f, tween(600, easing = FastOutSlowInEasing))
         
         // 发光脉冲动画
-        launch {
+        scope.launch {
             while (true) {
                 glowPulse.animateTo(1f, tween(1000, easing = FastOutSlowInEasing))
                 glowPulse.animateTo(0.5f, tween(1000, easing = FastOutSlowInEasing))
@@ -134,7 +137,7 @@ fun ModernSplashScreen(onAnimationEnd: () -> Unit) {
         
         delay(2000)
         
-        // 阶段3：淡出
+        // 阶段 3：淡出
         fadeAlpha.animateTo(0f, tween(600, easing = FastOutSlowInEasing))
         onAnimationEnd()
     }
@@ -170,7 +173,7 @@ fun ModernSplashScreen(onAnimationEnd: () -> Unit) {
             }
         }
         
-        // Logo区域
+        // Logo 区域
         if (showLogo) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -436,7 +439,7 @@ fun ModernLoginScreen(onLoginSuccess: () -> Unit) {
                             }
                             
                             // 模拟加载
-                            kotlinx.coroutines.GlobalScope.launch {
+                            CoroutineScope(Dispatchers.Main).launch {
                                 delay(500)
                                 onLoginSuccess()
                             }
@@ -544,7 +547,7 @@ fun ModernTextField(
 // ==========================================
 @Composable
 fun DashboardScreen() {
-    var rootStatus by remember { mutableStateOf("正在检测Root权限...") }
+    var rootStatus by remember { mutableStateOf("正在检测 Root 权限...") }
     var systemInfo by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(true) }
     
@@ -555,18 +558,18 @@ fun DashboardScreen() {
                 if (result.isSuccess) {
                     val output = result.out.joinToString("\n")
                     if (output.contains("uid=0")) {
-                        rootStatus = "Root权限：已获取 ✓"
+                        rootStatus = "Root 权限：已获取 ✓"
                         systemInfo = output
                     } else {
-                        rootStatus = "Root权限：未获取 ✗"
-                        systemInfo = "当前用户: $output"
+                        rootStatus = "Root 权限：未获取 ✗"
+                        systemInfo = "当前用户：$output"
                     }
                 } else {
-                    rootStatus = "Root权限：未获取 ✗"
+                    rootStatus = "Root 权限：未获取 ✗"
                     systemInfo = result.err.joinToString("\n")
                 }
             } catch (e: Exception) {
-                rootStatus = "Root权限：检测失败 ✗"
+                rootStatus = "Root 权限：检测失败 ✗"
                 systemInfo = e.localizedMessage ?: "未知错误"
             } finally {
                 isLoading = false
@@ -605,7 +608,7 @@ fun DashboardScreen() {
             
             Spacer(modifier = Modifier.height(8.dp))
             
-            // Root状态卡片
+            // Root 状态卡片
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -614,7 +617,7 @@ fun DashboardScreen() {
             ) {
                 Column {
                     Text(
-                        text = "Root状态",
+                        text = "Root 状态",
                         color = Color.Gray,
                         fontFamily = FontFamily.Monospace,
                         fontSize = 12.sp

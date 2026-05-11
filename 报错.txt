@@ -1,0 +1,150 @@
+运行./gradlew构建
+下载中https://services.gradle.org/distributions/gradle-8.5-bin.zip
+............10%.............20%............30%.............40%.............50%............60%.............70%.............80%............90%.............100%
+
+欢迎来到 Gradle 8.5！
+
+以下是本次发布的亮点：
+- 支持 Java 21 运行
+- Kotlin DSL 首次使用速度更快
+- 改进的错误和警告信息
+
+更多详情请参见https://docs.gradle.org/8.5/release-notes.html
+
+开始一个格拉德尔恶魔（后续构建会更快）
+> 任务 ：app：preBuild 最新
+> 任务 ：app：preDebug 构建 最新
+> 任务 ：app：mergeDebugNativeDebugMetadata 无源
+> 任务 ：app：checkKotlinGradlePluginConfigurationErrors
+> 任务 ：app：generateDebugBuildConfig
+> 任务 ：app：生成调试ResValues
+> 任务 ：app：checkDebugAarMetadata
+> 任务 ：app：mapDebugSourceSetPaths
+> 任务 ：app：生成调试资源
+> 任务 ：app：packageDebugResources
+> 任务 ：app：merge调试资源
+> 任务 ：app：createDebugCompatibleScreenManifests
+> 任务 ：app：extractDeepLinksDebug
+> 任务 ：app：parseDebugLocalResources
+> 任务 ：app：processDebugMainManifest
+> 任务 ：app：processDebugManifest
+> 任务 ：app：java预编译调试
+> 任务 ：app：mergeDebugShaders
+> 任务 ：app：compileDebugShaders 无源代码
+> 任务 ：app：生成调试资产 最新
+> 任务 ：app：mergeDebugAssets
+> 任务 ：app：compressdebugAssets
+> 任务 ：app：desugarDebugFile 依赖关系
+> 任务 ：app：mergeDebugJniLibFolders
+> 任务 ：app：checkDebugDuplicateClasses
+> 任务 ：app：mergeDebugNativeLibs 无源代码
+> 任务 ：app：processDebugManifestForPackage
+> 任务 ：app：mergeExtDexDebug
+> 任务 ：app：stripDebugDebugDebugSymbols 无源代码
+> 任务 ：app：mergeLibDexDebug
+> 任务 ：app：validateSigningDebug
+> 任务 ：app：writeDebugAppMetadata
+> 任务 ：app：writeDebugSigningConfigVersions
+> 任务 ：app：buildKotlinToolingMetadata
+> 任务 ：app：preRelease构建 最新
+> 任务 ：app：generateReleaseBuildConfig
+> 任务 ：app：生成释放ResValues
+> 任务 ：app：checkReleaseAarMetadata
+> 任务 ：app：mapReleaseSourceSetPaths
+> 任务 ：app：生成释放资源
+> 任务 ：app：process调试资源
+> 任务 ：app：merge 发布资源
+> 任务 ：app：packageReleaseResources
+> 任务 ：app：createReleaseCompatibleScreenManifests
+> 任务 ：app：extractDeepLinksRelease
+> 任务 ：app：parseReleaseLocalResources
+> 任务 ：app：processReleaseMainManifest
+> 任务 ：app：processReleaseManifest
+> 任务 ：app：java预编译发布
+> 任务 ：app：extractProguardFiles
+> 任务 ：app：merge 释放JniLibFolders
+> 任务 ：app：mergeReleaseNativeLibs 无源代码
+> 任务 ：app：processReleaseManifestForPackage
+> 任务 ：app：stripReleaseDebugSymbols 无源代码
+> 任务 ：app：extractReleaseNativeSymbolTables 无源代码
+> 任务 ：app：mergeReleaseNativeDebugMetadata 无源代码
+> 任务 ：应用：检查释放重复类
+> 任务 ：app：merge发布艺术配置文件
+> 任务 ：app：mergeReleaseShaders
+> 任务 ：app：compileReleaseShaders 无源代码
+> 任务 ：app：生成释放资产 最新
+> 任务 ：app：mergeReleaseAssets
+> 任务 ：app：compressReleaseAssets
+> 任务 ：app：processApplicationManifestReleaseForBundle
+> 任务 ：app：processReleaseResources
+> 任务 ：app：collectReleaseDependencies
+> 任务 ：app：sdkReleaseDependencyData
+> 任务 ：app：writeReleaseAppMetadata
+> 任务 ：app：writeReleaseSigningConfigVersions
+> 任务 ：app：preDebugAndroidTestBuild 跳过
+> 任务 ：app：生成调试Android测试ResValues
+> 任务 ：app：preDebugUnitTest构建 最新
+> 任务 ：app：javaPreCompileDebugUnitTest
+> 任务 ：app：preReleaseUnitTestBuild 最新
+> 任务 ：app：javaPreCompileReleaseUnitTest
+> 任务 ：app：bundle 发布资源
+
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:125:9 未解决的引用：发布
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:127:27 悬挂功能只能在协程体中调用
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:128:27 悬挂功能只能在协程体中调用
+> 任务 ：app：compile ReleaseKotlin 失败
+e：file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:163:21 Val不能被重新分配
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:439:60 未解决的提及：启动
+
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:440:33 暂停函数“延迟”应仅从协程或其他暂停函数调用
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:701:14 表达式“权重”不能作为函数调用。未找到函数“invoke（）”
+e：file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:701:14 未解决的参考。以下候选情况均不适用，因接球机类型不匹配：
+> 任务 ：app：compileDebugKotlin 失败
+internal val RowColumnParentData？.weight：float 定义于 androidx.compose.foundation.layout
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:705:17 未解决参考：drawRect
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:707:49 未解决参考：toPx
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:125:9 未解决的引用：发布
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:127:27 悬挂功能只能在协程体中调用
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:128:27 悬挂功能只能在协程体中调用
+e：file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:163:21 Val不能被重新分配
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:439:60 未解决的提及：启动
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:440:33 暂停函数“延迟”应仅从协程或其他暂停函数调用
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:701:14 表达式“权重”不能作为函数调用。未找到函数“invoke（）”
+e：file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:701:14 未解决的参考。以下候选情况均不适用，因接球机类型不匹配：
+internal val RowColumnParentData？.weight：float 定义于 androidx.compose.foundation.layout
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:705:17 未解决参考：drawRect
+e： file:///home/runner/work/TootX/TootX/app/src/main/java/com/root/toolbox/MainActivity.kt:707:49 未解决参考：toPx
+gradle/actions：将建造结果写入 /home/runner/work/_temp/.gradle-actions/build-results/__run_2-1778509619449.json
+
+59项可执行任务：59项已执行
+失败：构建完成时有两次失败。
+
+1：任务失败（有例外）。
+-----------
+* 出了什么问题：
+任务 '：app：compileDebugKotlin' 执行失败。
+> 在执行 org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction 时发生了失败
+> 编译错误。详情请参见日志
+
+* 试试：
+> 运行 --stacktrace 选项以获取栈跟踪。
+> 运行时使用 --info 或 --debug 选项，以获得更多的日志输出。
+> 用 --scan来获取完整的洞察。
+> 获取更多帮助请访问https://help.gradle.org。
+==============================================================================
+
+2：任务失败，例外情况。
+-----------
+* 出了什么问题：
+任务 '：app：compileReleaseKotlin' 执行失败。
+> 在执行 org.jetbrains.kotlin.compilerRunner.GradleCompilerRunnerWithWorkers$GradleKotlinCompilerWorkAction 时发生了失败
+> 编译错误。详情请参见日志
+
+* 试试：
+> 运行 --stacktrace 选项以获取栈跟踪。
+> 运行时使用 --info 或 --debug 选项，以获得更多的日志输出。
+> 用 --scan来获取完整的洞察。
+> 获取更多帮助请访问https://help.gradle.org。
+==============================================================================
+
+建造在2分19秒内失败
